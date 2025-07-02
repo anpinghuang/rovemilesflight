@@ -1,0 +1,6 @@
+Origin,Destination,Airline,Miles_Required
+JFK,LAX,AA,6000
+SIN,JNB,TK,45000
+BOS,ZRH,DL,35000
+YVR,SFO,AS,7500
+YYZ,NRT,AA,35000
