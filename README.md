@@ -1,99 +1,64 @@
 ![image](https://github.com/user-attachments/assets/291bf522-03e7-41fd-9923-3499af98601d)
+Here’s a friendlier, more down-to-earth take on the docs—casual but still clear.
 
-1. **Data collection** (what you gathered and why)
-2. **Backend code walkthrough** (`main.py`)
-3. **Frontend code walkthrough** (`app.py`)
-4. **How to run and use the app**
-5. **How to interpret the UI output**
+---
 
+# 1. What we collected and why
 
-## 1. Project Overview
+**Flight data**
 
-Build a web tool that helps travelers decide whether to pay cash or redeem airline miles—and spot cheaper “synthetic” (multi-stop) itineraries—for five example international routes.
+* Routes (picked back in Week 2):
 
-**the features:**
+  * JFK→LAX, SIN→JNB, BOS→ZRH, YVR→SFO, YYZ→NRT
+* Pulled from Amadeus API for every day in July 2025
+* Saved into `flights_data.db`, one table per route, with columns:
 
-* Compare cheapest cash fare vs. miles redemption.
-* Calculate “value per mile” (¢ value you get when you redeem).
-* Highlight any synthetic-routing savings.
-* Simple web UI (Streamlit) with dropdowns and results table.
+  * date, airline code, origin, destination, departure time, price (USD), layovers
+* **Why?** So we have real cash fares to compare against miles—and spot if a two-stop trip is actually cheaper than nonstop.
 
+**Award chart** (`award_chart.csv`)
 
+| Origin | Dest | Airline | Miles\_Required |
+| ------ | ---- | ------- | --------------- |
+| JFK    | LAX  | AA      | 6000            |
+| SIN    | JNB  | TK      | 45000           |
+| BOS    | ZRH  | DL      | 35000           |
+| YVR    | SFO  | AS      | 7500            |
+| YYZ    | NRT  | AA      | 35000           |
 
-## 2. Data Collection
+* Grabbed the “saver” economy rates from each airline’s chart (AA, Turkish, Delta, Alaska)
+* **Why?** That’s the miles you need to book each route, so we can calculate “value per mile.”
 
-### 2.1 Flight Data (`main.py` → `flights_data.db`)
-
-* **Routes (the ones we selected in week 2):**
-
-  1. JFK → LAX
-  2. SIN → JNB
-  3. BOS → ZRH
-  4. YVR → SFO
-  5. YYZ → NRT
-
-* **Fetched data using:** Amadeus Self-Service API
-
-* **What we store per route:**
-
-  * `date` (YYYY-MM-DD)
-  * `airline` (IATA carrier code)
-  * `departure_airport`, `arrival_airport`
-  * `departure_time`
-  * `price` (USD total)
-  * `layovers` (number of stops)
-
-* **Why?** Enables comparison of real cash fares to award miles and lets us detect if a multi-stop option can be cheaper than nonstop.
-
-
-
-### 2.2 Award Chart Data (`award_chart.csv`)
-
-| Origin | Destination | Airline | Miles\_Required |
-|  | -- | - |  |
-| JFK    | LAX         | AA      | 6000            |
-| SIN    | JNB         | TK      | 45000           |
-| BOS    | ZRH         | DL      | 35000           |
-| YVR    | SFO         | AS      | 7500            |
-| YYZ    | NRT         | AA      | 35000           |
-
-* **Source:** estimated saver-level award charts (AAdvantage, Miles\&Smiles, SkyMiles, Mileage Plan)
-* **Why:** Number of miles needed for a one-way economy award on each route. Used to compute “value per mile.”
-
-
-
-### 2.3 Valuation Data (hard-coded) (fetched from week 1 )
+**Valuation numbers** (hard-coded)
 
 ```python
 valuation_dict = {
-    "AA": 0.016,   # 1.6¢ per mile
-    "TK": 0.007,   # 0.7¢ per mile
-    "DL": 0.012,   # 1.2¢ per mile
-    "AS": 0.013,   # 1.3¢ per mile
+  "AA": 0.016,  # 1.6¢/mile
+  "TK": 0.007,  # 0.7¢/mile
+  "DL": 0.012,  # 1.2¢/mile
+  "AS": 0.013,  # 1.3¢/mile
 }
 ```
 
-* **Why:** Estimate cash value of miles for “Estimated cash value of your miles” display.
+* Pulled from Week 1 research
+* Used to turn miles into “estimated dollar value” in the app
 
+---
 
+# 2. How the backend works (`main.py`)
 
-## 3. Backend Code Walkthrough (`main.py`)
+1. Load your Amadeus credentials (`.env`).
+2. Define those five routes, `CREATE TABLE IF NOT EXISTS` for each in SQLite.
+3. Loop through July 2025 dates + each route:
 
-1. **Load API keys** from `.env` (CLIENT\_KEY, CLIENT\_SECRET).
+   * Call the Amadeus flight search endpoint
+   * Take up to five offers, extract carrier, price, stops, times
+   * Insert into the right table (skips duplicates)
+4. Write out an Excel file (`flight_data_July2025.xlsx`) just for a quick peek
 
-2. **Define routes** and create one SQLite table per route (if not exist).
+---
 
-3. **Iterate** over every day in July 2025 and each route:
-
-   * Call `amadeus.shopping.flight_offers_search.get(...)`.
-   * Parse up to 5 offers: extract carrier, price, layovers, times.
-   * Insert into the corresponding SQLite table, ignoring duplicates.
-
-4. **Export to Excel** (`flight_data_July2025.xlsx`) for quick human review.
-
-
-
-## 4. Frontend Code Walkthrough (`app.py`)
+# 3. How the frontend works (`app.py`)
 
 ```python
 import streamlit as st
@@ -101,86 +66,75 @@ import sqlite3
 import pandas as pd
 ```
 
-1. **Load award chart** (CSV) and **valuation dict**.
-2. **Define helper functions**:
+1. Read in `award_chart.csv` and the `valuation_dict`.
+2. Define two helpers:
 
    * `calculate_value_per_mile(cash_price, miles_required)`
-   * `find_synthetic_savings(df, origin, destination)`
-3. **Map** each (origin, destination) to its SQLite table name.
-4. **Streamlit UI**:
+   * `find_synthetic_savings(df, origin, dest)`
+3. Map each (origin, dest) pair to its SQLite table name.
+4. Build a simple Streamlit page:
 
-   * `st.selectbox` for Origin & Destination.
-   * `st.button("Analyze")` triggers:
+   * Two dropdowns (origin & destination)
+   * “Analyze” button that:
 
-     * Connect to `flights_data.db`.
-     * Query the correct table for matching rows.
-     * If no rows → show “No data available.”
-     * Else:
+     * Connects to `flights_data.db`
+     * Queries the right table
+     * If no results, says so
+     * Otherwise shows you:
 
-       * Show sample flights table (`st.write(df)`).
-       * Look up award-mile requirement from `award_chart.csv`.
-       * Compute:
+       * A sample of flights (carrier, date, price, layovers)
+       * The cheapest cash fare
+       * Miles needed (award chart lookup)
+       * Value per mile (cash ÷ miles)
+       * Estimated mile-value in dollars (miles × valuation)
+       * Any synthetic-route savings (multi-stop deal cheaper than nonstop)
+     * Closes the DB
 
-         * **Cheapest cash price** (`df['Price_in_Dollars'].min()`)
-         * **Value per mile** = cash\_price / miles\_required
-         * **Estimated cash value of miles** = miles\_required × cents\_per\_mile
-       * Call `find_synthetic_savings(...)` and display any savings.
-     * Close DB connection.
+---
 
+# 4. Running it
 
+1. **Install** (no need for `sqlite3`—it’s built in):
 
-## 5. Running & Using the App
-
-1. **Install dependencies** (omit `sqlite3`):
-
-   ```
+   ```bash
    pip install pandas streamlit amadeus python-dotenv xlsxwriter
    ```
-   
-2. **Collect flight data (skip if using existing db), creating the flights_data.csv** (once):
+2. **Fetch data** (only once, unless you want fresh July data):
 
-   ```
+   ```bash
    python main.py
    ```
-4. **Run UI:**
+3. **Fire up the UI**:
 
-   ```
+   ```bash
    streamlit run app.py
    ```
-5. **UI steps:**
+4. In your browser:
 
-   * Select Origin & Destination.
-   * Click “Analyze.”
-   * Review:
+   * Pick origin & destination
+   * Click **Analyze**
+   * Read off the results
 
-     * Table of flights (carrier, date, price, layovers).
-     * Cheapest cash price.
-     * Miles required.
-     * Value per mile.
-     * Estimated cash value of your miles.
-     * Synthetic routing savings (if any).
+---
 
+# 5. How to read the results
 
+* **Flights table:** your cash-fare options
+* **Cheapest cash price:** the absolute lowest USD fare
+* **Miles required:** rows from your saver-level award chart
+* **Value per mile:** cash ÷ miles (bigger is better)
+* **Estimated cash value of miles:** miles × cents-per-mile valuation
+* **Synthetic savings:** shows how much \$ you’d save if there’s a cheaper multi-stop deal
 
-## 6. Interpreting the UI Output
+---
 
-* **Sample Flights table:** shows available cash-fare options.
-* **Cheapest cash price:** the lowest fare found.
-* **Miles required:** how many miles needed for an award ticket (from award\_chart.csv).
-* **Approximate value per mile:** cash\_price ÷ miles\_required (higher = better use of miles).
-* **Estimated cash value of your miles:** miles\_required × per-mile valuation (¢).
-* **Synthetic savings:** if a multi-stop option is cheaper than nonstop, shows the \$ saved.
-
-
-
-### Example Interpretation
+### Quick example
 
 > **Cheapest cash price:** \$98
 > **Miles required:** 6,000
 > **Value per mile:** \$0.016
-> **Estimated cash value of your miles:** \$96
-> **No synthetic savings:** no cheaper multi-stop option found.
->
-> → You’d get \~1.6¢ of value per mile, slightly below AA’s average of 1.6¢–1.7¢, and using miles (worth \$96) vs. paying cash (\$98) are nearly equivalent. No hidden layover deals exist.
+> **Cash value of miles:** \$96
+> **No synthetic savings**
 
+→ You get about 1.6¢ per mile—pretty much in line with AA’s typical value. Using miles vs. paying cash are almost a wash, and no hidden-stop deal beat the nonstop ticket.
 
