@@ -117,7 +117,7 @@ import pandas as pd
 
 ---
 
-# 5. How to read the results
+# 5. read the results
 
 * **Flights table:** your cash-fare options
 * **Cheapest cash price:** the absolute lowest USD fare
@@ -128,7 +128,7 @@ import pandas as pd
 
 ---
 
-### Quick example
+### e.g.
 
 > **Cheapest cash price:** \$98
 > **Miles required:** 6,000
