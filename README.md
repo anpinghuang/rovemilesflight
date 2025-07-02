@@ -6,7 +6,6 @@
 4. **How to run and use the app**
 5. **How to interpret the UI output**
 
----
 
 ## 1. Project Overview
 
@@ -19,7 +18,7 @@ Build a web tool that helps travelers decide whether to pay cash or redeem airli
 * Highlight any synthetic-routing savings.
 * Simple web UI (Streamlit) with dropdowns and results table.
 
----
+
 
 ## 2. Data Collection
 
@@ -46,12 +45,12 @@ Build a web tool that helps travelers decide whether to pay cash or redeem airli
 
 * **Why?** Enables comparison of real cash fares to award miles and lets us detect if a multi-stop option can be cheaper than nonstop.
 
----
+
 
 ### 2.2 Award Chart Data (`award_chart.csv`)
 
 | Origin | Destination | Airline | Miles\_Required |
-| ------ | ----------- | ------- | --------------- |
+|  | -- | - |  |
 | JFK    | LAX         | AA      | 6000            |
 | SIN    | JNB         | TK      | 45000           |
 | BOS    | ZRH         | DL      | 35000           |
@@ -61,7 +60,7 @@ Build a web tool that helps travelers decide whether to pay cash or redeem airli
 * **Source:** estimated saver-level award charts (AAdvantage, Miles\&Smiles, SkyMiles, Mileage Plan)
 * **Why:** Number of miles needed for a one-way economy award on each route. Used to compute “value per mile.”
 
----
+
 
 ### 2.3 Valuation Data (hard-coded) (fetched from week 1 )
 
@@ -76,7 +75,7 @@ valuation_dict = {
 
 * **Why:** Estimate cash value of miles for “Estimated cash value of your miles” display.
 
----
+
 
 ## 3. Backend Code Walkthrough (`main.py`)
 
@@ -92,7 +91,7 @@ valuation_dict = {
 
 4. **Export to Excel** (`flight_data_July2025.xlsx`) for quick human review.
 
----
+
 
 ## 4. Frontend Code Walkthrough (`app.py`)
 
@@ -128,7 +127,7 @@ import pandas as pd
        * Call `find_synthetic_savings(...)` and display any savings.
      * Close DB connection.
 
----
+
 
 ## 5. Running & Using the App
 
@@ -161,7 +160,7 @@ import pandas as pd
      * Estimated cash value of your miles.
      * Synthetic routing savings (if any).
 
----
+
 
 ## 6. Interpreting the UI Output
 
@@ -172,7 +171,7 @@ import pandas as pd
 * **Estimated cash value of your miles:** miles\_required × per-mile valuation (¢).
 * **Synthetic savings:** if a multi-stop option is cheaper than nonstop, shows the \$ saved.
 
----
+
 
 ### Example Interpretation
 
@@ -184,4 +183,4 @@ import pandas as pd
 >
 > → You’d get \~1.6¢ of value per mile, slightly below AA’s average of 1.6¢–1.7¢, and using miles (worth \$96) vs. paying cash (\$98) are nearly equivalent. No hidden layover deals exist.
 
----
+
