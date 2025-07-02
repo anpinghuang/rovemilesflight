@@ -1,22 +1,18 @@
 ![image](https://github.com/user-attachments/assets/291bf522-03e7-41fd-9923-3499af98601d)
 
-
-Below is a complete user- and developer-facing documentation for your RoveMiles Rewards Redemption Optimizer. It covers:
-
-1. **Project overview**
-2. **Data collection** (what you gathered and why)
-3. **Backend code walkthrough** (`main.py`)
-4. **Frontend code walkthrough** (`app.py`)
-5. **How to run and use the app**
-6. **How to interpret the UI output**
+1. **Data collection** (what you gathered and why)
+2. **Backend code walkthrough** (`main.py`)
+3. **Frontend code walkthrough** (`app.py`)
+4. **How to run and use the app**
+5. **How to interpret the UI output**
 
 ---
 
 ## 1. Project Overview
 
-**Goal:** Build a web tool that helps travelers decide whether to pay cash or redeem airline miles—and spot cheaper “synthetic” (multi-stop) itineraries—for five example international routes.
+Build a web tool that helps travelers decide whether to pay cash or redeem airline miles—and spot cheaper “synthetic” (multi-stop) itineraries—for five example international routes.
 
-**Key features:**
+**the features:**
 
 * Compare cheapest cash fare vs. miles redemption.
 * Calculate “value per mile” (¢ value you get when you redeem).
@@ -29,7 +25,7 @@ Below is a complete user- and developer-facing documentation for your RoveMiles 
 
 ### 2.1 Flight Data (`main.py` → `flights_data.db`)
 
-* **Routes:**
+* **Routes (the ones we selected in week 2):**
 
   1. JFK → LAX
   2. SIN → JNB
@@ -37,7 +33,7 @@ Below is a complete user- and developer-facing documentation for your RoveMiles 
   4. YVR → SFO
   5. YYZ → NRT
 
-* **Source:** Amadeus Self-Service API
+* **Fetched data using:** Amadeus Self-Service API
 
 * **What we store per route:**
 
@@ -48,7 +44,7 @@ Below is a complete user- and developer-facing documentation for your RoveMiles 
   * `price` (USD total)
   * `layovers` (number of stops)
 
-* **Why:** Enables comparison of real cash fares to award-chart miles and lets us detect if a multi-stop option can be cheaper than nonstop.
+* **Why?** Enables comparison of real cash fares to award miles and lets us detect if a multi-stop option can be cheaper than nonstop.
 
 ---
 
@@ -62,12 +58,12 @@ Below is a complete user- and developer-facing documentation for your RoveMiles 
 | YVR    | SFO         | AS      | 7500            |
 | YYZ    | NRT         | AA      | 35000           |
 
-* **Source:** Official saver-level award charts (AAdvantage, Miles\&Smiles, SkyMiles, Mileage Plan)
+* **Source:** estimated saver-level award charts (AAdvantage, Miles\&Smiles, SkyMiles, Mileage Plan)
 * **Why:** Number of miles needed for a one-way economy award on each route. Used to compute “value per mile.”
 
 ---
 
-### 2.3 Valuation Data (hard-coded)
+### 2.3 Valuation Data (hard-coded) (fetched from week 1 )
 
 ```python
 valuation_dict = {
@@ -141,16 +137,8 @@ import pandas as pd
    ```
    pip install pandas streamlit amadeus python-dotenv xlsxwriter
    ```
-2. **Ensure files in project folder:**
-
-   ```
-   ├ app.py
-   ├ award_chart.csv
-   ├ flights_data.db
-   ├ main.py
-   ├ .env
-   ```
-3. **Collect flight data** (once):
+   
+2. **Collect flight data (skip if using existing db), creating the flights_data.csv** (once):
 
    ```
    python main.py
@@ -197,15 +185,3 @@ import pandas as pd
 > → You’d get \~1.6¢ of value per mile, slightly below AA’s average of 1.6¢–1.7¢, and using miles (worth \$96) vs. paying cash (\$98) are nearly equivalent. No hidden layover deals exist.
 
 ---
-
-## 7. Next Steps & Future Improvements
-
-* **Real-time data:** integrate API calls directly in the app.
-* **More routes & classes:** add business/first, more city pairs.
-* **Mapping visualization:** plot itineraries on a map.
-* **User authentication:** save user’s miles balances.
-
----
-
-**End of Documentation**
-Feel free to copy, adapt, and include this in your repository’s README or as a standalone PDF guide.
