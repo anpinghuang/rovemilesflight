@@ -14,7 +14,7 @@ Here’s a friendlier, more down-to-earth take on the docs—casual but still cl
 * Saved into `flights_data.db`, one table per route, with columns:
 
   * date, airline code, origin, destination, departure time, price (USD), layovers
-* **Why?** So we have real cash fares to compare against miles—and spot if a two-stop trip is actually cheaper than nonstop.
+*  So we have real cash fares to compare against miles and spot if a two-stop trip is actually cheaper than nonstop.
 
 **Award chart** (`award_chart.csv`)
 
@@ -27,7 +27,7 @@ Here’s a friendlier, more down-to-earth take on the docs—casual but still cl
 | YYZ    | NRT  | AA      | 35000           |
 
 * Grabbed the “saver” economy rates from each airline’s chart (AA, Turkish, Delta, Alaska)
-* **Why?** That’s the miles you need to book each route, so we can calculate “value per mile.”
+*   That’s the miles you need to book each route, so we can calculate “value per mile.”
 
 **Valuation numbers** (hard-coded)
 
